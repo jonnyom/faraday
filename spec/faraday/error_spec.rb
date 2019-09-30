@@ -24,6 +24,15 @@ RSpec.describe Faraday::ClientError do
       it { expect(subject.inspect).to eq('#<Faraday::ClientError response={:status=>400}>') }
     end
 
+    context 'with response hash but nil status' do
+      let(:exception) { { status: nil } }
+
+      it { expect(subject.wrapped_exception).to be_nil }
+      it { expect(subject.response).to eq(exception) }
+      it { expect(subject.message).to eq('the server responded with a nil status') }
+      it { expect(subject.inspect).to eq('#<Faraday::ClientError response={:status=>nil}>') }
+    end
+
     context 'with string' do
       let(:exception) { 'custom message' }
 
