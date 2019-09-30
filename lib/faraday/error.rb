@@ -13,7 +13,10 @@ module Faraday
         super(exc.message)
         @wrapped_exception = exc
       elsif exc.respond_to?(:each_key)
-        super("the server responded with status #{exc[:status]}")
+        nil_status_message = 'the server responded with a nil status'
+        status_exists_msg = "the server responded with status #{exc[:status]}"
+        message = exc[:status].nil? ? nil_status_message : status_exists_msg
+        super(message)
         @response = exc
       else
         super(exc.to_s)
@@ -67,6 +70,10 @@ module Faraday
 
   # Raised by Faraday::Response::RaiseError in case of a 422 response.
   class UnprocessableEntityError < ClientError
+  end
+
+  # Raised by Faraday::Response::RaiseError in case of a nil status in response.
+  class NilStatusError < ClientError
   end
 
   # Faraday server error class. Represents 5xx status responses.

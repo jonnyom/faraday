@@ -14,6 +14,7 @@ RSpec.describe Faraday::Response::RaiseError do
         stub.get('conflict') { [409, { 'X-Reason' => 'because' }, 'keep looking'] }
         stub.get('unprocessable-entity') { [422, { 'X-Reason' => 'because' }, 'keep looking'] }
         stub.get('4xx') { [499, { 'X-Reason' => 'because' }, 'keep looking'] }
+        stub.get('nil-status') { [nil, { 'X-Reason' => 'because' }, 'keep looking'] }
         stub.get('server-error') { [500, { 'X-Error' => 'bailout' }, 'fail'] }
       end
     end
@@ -68,6 +69,13 @@ RSpec.describe Faraday::Response::RaiseError do
   it 'raises Faraday::UnprocessableEntityError for 422 responses' do
     expect { conn.get('unprocessable-entity') }.to raise_error(Faraday::UnprocessableEntityError) do |ex|
       expect(ex.message).to eq('the server responded with status 422')
+      expect(ex.response[:headers]['X-Reason']).to eq('because')
+    end
+  end
+
+  it 'raises Faraday::NilStatusError for nil status in response' do
+    expect { conn.get('nil-status') }.to raise_error(Faraday::NilStatusError) do |ex|
+      expect(ex.message).to eq('the server responded with a nil status')
       expect(ex.response[:headers]['X-Reason']).to eq('because')
     end
   end
