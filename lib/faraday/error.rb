@@ -13,10 +13,7 @@ module Faraday
         super(exc.message)
         @wrapped_exception = exc
       elsif exc.respond_to?(:each_key)
-        nil_status_message = 'the server responded with a nil status'
-        status_exists_msg = "the server responded with status #{exc[:status]}"
-        message = exc[:status].nil? ? nil_status_message : status_exists_msg
-        super(message)
+        super("the server responded with status #{exc[:status]}")
         @response = exc
       else
         super(exc.to_s)
@@ -72,10 +69,6 @@ module Faraday
   class UnprocessableEntityError < ClientError
   end
 
-  # Raised by Faraday::Response::RaiseError in case of a nil status in response.
-  class NilStatusError < ClientError
-  end
-
   # Faraday server error class. Represents 5xx status responses.
   class ServerError < Error
   end
@@ -84,6 +77,14 @@ module Faraday
   class TimeoutError < ServerError
     def initialize(exc = 'timeout', response = nil)
       super(exc, response)
+    end
+  end
+
+  # Raised by Faraday::Response::RaiseError in case of a nil status in response.
+  class NilStatusError < ServerError
+    def initialize(response = nil)
+      message = 'http status could not be derived from the server response'
+      super(message, response)
     end
   end
 

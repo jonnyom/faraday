@@ -14,7 +14,7 @@ RSpec.describe Faraday::Response::RaiseError do
         stub.get('conflict') { [409, { 'X-Reason' => 'because' }, 'keep looking'] }
         stub.get('unprocessable-entity') { [422, { 'X-Reason' => 'because' }, 'keep looking'] }
         stub.get('4xx') { [499, { 'X-Reason' => 'because' }, 'keep looking'] }
-        stub.get('nil-status') { [nil, { 'X-Reason' => 'because' }, 'keep looking'] }
+        stub.get('nil-status') { [nil, { 'X-Reason' => 'bailout' }, 'fail'] }
         stub.get('server-error') { [500, { 'X-Error' => 'bailout' }, 'fail'] }
       end
     end
@@ -75,8 +75,7 @@ RSpec.describe Faraday::Response::RaiseError do
 
   it 'raises Faraday::NilStatusError for nil status in response' do
     expect { conn.get('nil-status') }.to raise_error(Faraday::NilStatusError) do |ex|
-      expect(ex.message).to eq('the server responded with a nil status')
-      expect(ex.response[:headers]['X-Reason']).to eq('because')
+      expect(ex.message).to eq('http status could not be derived from the server response')
     end
   end
 
